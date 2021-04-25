@@ -4,10 +4,12 @@
   "repository": "snapshot-labs/snapshot-hub",
   "license": "MIT",
   "scripts": {
-    "lint": "vue-cli-service lint ./server/**/*.ts",
-    "express": "vue-cli-service express:watch",
-    "express:run": "vue-cli-service express:run",
-    "start": "vue-cli-service express:run"
+    "lint": "eslint . --ext .ts --fix",
+    "express": "npm run watch",
+    "watch": "nodemon -e ts -x npm run watch:serve",
+    "watch:serve": "ts-node index.ts",
+    "express:run": "npm run watch:serve",
+    "start": "npm run watch:serve"
   },
   "dependencies": {
     "@ensdomains/ensjs": "^2.0.0",
@@ -34,6 +36,7 @@
     "cors": "^2.8.5",
     "cross-fetch": "^3.0.6",
     "discord.js": "^12.3.1",
+    "dotenv": "^8.2.0",
     "eslint": "^6.7.2",
     "eth-ens-namehash": "^2.0.8",
     "ethereumjs-util": "^7.0.6",
@@ -47,20 +50,19 @@
     "mysql": "^2.18.1",
     "node-fetch": "^2.6.1",
     "require-context": "^1.1.0",
-    "typescript": "~3.9.3",
-    "vue-cli-plugin-express": "^1.0.2"
+    "typescript": "~3.9.3"
   },
   "devDependencies": {
+    "@types/express": "^4.17.11",
     "@types/node": "^14.0.13",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
-    "@vue/cli-plugin-router": "^4.4.0",
-    "@vue/cli-plugin-vuex": "^4.4.0",
     "@vue/eslint-config-prettier": "^6.0.0",
-    "@vue/eslint-config-typescript": "^5.0.2",
+    "@vue/eslint-config-typescript": "^7.0.0",
     "eslint-plugin-prettier": "^3.1.3",
-    "eslint-plugin-vue": "^6.2.2",
+    "eslint-plugin-vue": "^7.9.0",
+    "nodemon": "^2.0.7",
     "prettier": "^1.19.1",
-    "vue-template-compiler": "^2.6.11"
+    "ts-node": "^9.1.1"
   }
 }

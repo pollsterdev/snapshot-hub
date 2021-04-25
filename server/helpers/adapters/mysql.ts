@@ -3,7 +3,7 @@ import fleek from '@fleekhq/fleek-storage-js';
 import { isAddress, getAddress } from '@ethersproject/address';
 import db from '../mysql';
 import { getSpace } from '../ens';
-import { spaceIdsFailed, spaces} from '../spaces';
+import { spaceIdsFailed, spaces } from '../spaces';
 
 export async function addOrUpdateSpace(space: string) {
   const ts = (Date.now() / 1e3).toFixed();
@@ -98,12 +98,12 @@ export async function storeSettings(space, body) {
 export async function getActiveProposals(_spaces) {
   const ts = parseInt((Date.now() / 1e3).toFixed());
   let query = `
-    SELECT space, COUNT(id) AS count FROM messages WHERE
-    type = 'proposal'
-    AND space != ''
-    AND JSON_EXTRACT(payload, "$.start") <= ?
-    AND JSON_EXTRACT(payload, "$.end") >= ?
-    AND (`;
+  SELECT space, COUNT(id) AS count FROM messages WHERE
+  type = 'proposal'
+  AND space != ''
+  AND JSON_EXTRACT(payload, "$.start") <= ?
+  AND JSON_EXTRACT(payload, "$.end") >= ?
+  AND (`;
   const params = [ts, ts];
 
   Object.entries(_spaces).forEach((space: any, i) => {
