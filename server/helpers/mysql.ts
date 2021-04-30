@@ -5,6 +5,7 @@ import bluebird from 'bluebird';
 // @ts-ignore
 import parse from 'connection-string';
 
+// @ts-ignore
 const config = parse(process.env.DATABASE_URL);
 config.connectionLimit = process.env.CONNECTION_LIMIT || 150;
 config.multipleStatements = true;
