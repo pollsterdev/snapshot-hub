@@ -65,6 +65,6 @@ export async function action(
   const networkStr = network === 'testnet' ? 'demo.' : '';
   let message = `${msg.space} (${network})\n`;
   message += `**${msg.payload.name}**\n`;
-  message += `<https://${networkStr}snapshot.org/#/${msg.space}/proposal/${authorIpfsHash}>`;
+  message += `<https://${networkStr}pollster.org/#/${msg.space}/proposal/${authorIpfsHash}>`;
   sendMessage(message);
 }

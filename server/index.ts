@@ -1,7 +1,7 @@
 global['fetch'] = require('node-fetch');
 import express from 'express';
 import { getAddress } from '@ethersproject/address';
-import { spaces } from './helpers/spaces';
+import { spaces, getSpaces } from './helpers/spaces';
 import db from './helpers/mysql';
 import relayer from './helpers/relayer';
 import { pinJson } from './helpers/ipfs';
@@ -19,6 +19,9 @@ import pkg from '../package.json';
 
 const router = express.Router();
 const network = process.env.NETWORK || 'testnet';
+const admins = (process.env.ADMINS)
+  ? process.env.ADMINS.split(',')
+  : []
 
 router.get('/', (req, res) => {
   return res.json({
@@ -30,20 +33,102 @@ router.get('/', (req, res) => {
   });
 });
 
-router.get('/spaces/:key?', (req, res) => {
-  const { key } = req.params;
-  return res.json(key ? spaces[key] : spaces);
+router.get('/spaces/unapproved', async (req, res) => {
+  try {
+      const query = `
+        SELECT *
+        FROM spaces
+        WHERE approved = false
+      `
+
+      const spaces = (await db.queryAsync(query))
+        .map((x: any) => {
+          x.settings = JSON.parse(x.settings)
+          x.approved = Boolean(x.approved)
+          return x
+        })
+
+      res.json(spaces)
+  } catch (err) {
+    console.error(err)
+    res.status(500).send('Problem getting unapproved spaces')
+  }
+})
+
+router.get('/spaces/:key?', async (req, res) => {
+  try {
+    const { key } = req.params
+    const spacesFromDb = await getSpaces()
+    return res.json(key ? spacesFromDb[key] : spacesFromDb)
+  } catch (err) {
+    console.error(err)
+    res.status(500).send('Problem getting spaces')
+  }
 });
 
-router.get('/spaces/:key/poke', async (req, res) => {
-  const { key } = req.params;
-  const space = await loadSpace(key);
+const pokeSpace = async ({ key }) => {
+  const space = await loadSpace(key)
   if (space) {
-    await addOrUpdateSpace(key, space);
-    spaces[key] = space;
+    await addOrUpdateSpace(key, space)
+    spaces[key] = space
   }
-  return res.json(space);
-});
+
+  return space
+}
+
+router.get('/spaces/:key/poke', async (req, res) => {
+  const { key } = req.params
+  const space = await pokeSpace({ key })
+  return res.json(space)
+})
+
+router.get('/admins/:account', async (req, res) => {
+  try {
+    const account = req.params.account
+
+    if (!account) res.send(false)
+
+    res.send(admins.includes(account))
+  } catch (err) {
+    console.error(err)
+    res.status(500).send('Unable to determine if admin')
+  }
+})
+
+router.post('/spaces/:spaceId/approve', async (req, res) => {
+  try {
+    const { spaceId } = req.params
+    const { account, message, signature } = req.body
+
+    if (!admins.includes(account)) {
+      return res.status(400).send('You are not an admin')
+    }
+
+    const isValidSignature = await verifySignature(account, signature, hashPersonalMessage(message))
+    if (!isValidSignature) {
+      return res.status(400).send('Invalid signature')
+    }
+
+    const query = `
+      UPDATE spaces
+      SET approved = true
+      WHERE id = ?
+    `
+
+    await db.queryAsync(query, [spaceId])
+    const spaceEntry: any = Object.entries(spaces)
+      .filter(x => x[0] === spaceId)
+
+    const space = spaceEntry[0]
+
+    if (space && space[1]) space[1].approved = true
+
+    res.json({ status: 'success' })
+  } catch (err) {
+    console.error(err)
+    res.status(500).send('Problem approving space')
+  }
+})
 
 router.get('/:space/proposals', async (req, res) => {
   const { space } = req.params;

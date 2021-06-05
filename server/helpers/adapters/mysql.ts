@@ -2,7 +2,6 @@ import { getAddress } from '@ethersproject/address';
 import snapshot from '@snapshot-labs/snapshot.js';
 import fleek from '@fleekhq/fleek-storage-js';
 import db from '../mysql';
-import { getSpace } from '../ens';
 import { spaceIdsFailed, spaces } from '../spaces';
 
 export async function addOrUpdateSpace(space: string, settings: any) {
@@ -121,6 +120,18 @@ export async function storeVote(space, body, id, relayerIpfsHash) {
   console.log('Store vote complete', space, id);
 }
 
+const getSpace = async ({ id }) => {
+  const query = `
+    SELECT *
+    FROM spaces
+    WHERE id = ?
+  `
+
+  const [space] = await db.queryAsync(query, [id])
+
+  return space
+}
+
 export async function storeSettings(space, body) {
   const msg = JSON.parse(body.msg);
 
@@ -128,12 +139,15 @@ export async function storeSettings(space, body) {
   const result = await fleek.upload({
     apiKey: process.env.FLEEK_API_KEY || '',
     apiSecret: process.env.FLEEK_API_SECRET || '',
-    bucket: 'snapshot-team-bucket',
+    bucket: process.env.FLEEK_API_BUCKET,
     key,
     data: JSON.stringify(msg.payload)
   });
   const ipfsHash = result.hashV0;
   console.log('Settings updated', space, ipfsHash);
+
+  const spaceFromDb = await getSpace({ id: space.id })
+  if (spaceFromDb) space.approved = spaceFromDb.approved || false
 
   await addOrUpdateSpace(space, msg.payload);
 }

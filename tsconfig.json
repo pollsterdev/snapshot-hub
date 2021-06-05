@@ -9,5 +9,9 @@
     "strict": true,
     "noImplicitAny": false,
     "resolveJsonModule": true
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "transpiler": "ts-node/transpilers/swc-experimental"
   }
 }

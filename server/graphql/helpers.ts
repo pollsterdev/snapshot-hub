@@ -6,7 +6,7 @@ export function formatSpace(id, settings) {
   space.private = space.private || false;
   space.avatar =
     space.avatar ||
-    `https://raw.githubusercontent.com/snapshot-labs/snapshot-spaces/master/spaces/${id}/space.png`;
+    `https://raw.githubusercontent.com/pollsterdev/snapshot-spaces/master/spaces/${id}/space.png`;
   space.about = space.about || '';
   space.admins = space.admins || [];
   space.members = space.members || [];

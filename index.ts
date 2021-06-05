@@ -1,4 +1,6 @@
 import dotenv from 'dotenv';
+dotenv.config();
+
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import { graphqlHTTP } from 'express-graphql';
@@ -9,8 +11,6 @@ import api from './server';
 import { schema, rootValue } from './server/graphql';
 import defaultQuery from './server/graphql/examples';
 import { queryCountLimit, sendError } from './server/helpers/utils';
-
-dotenv.config();
 
 const app = express();
 app.use(bodyParser.json({ limit: '20mb' }));
